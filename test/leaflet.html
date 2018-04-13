@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>D3+Leaflet</title>
+	<!-- 引入Leaflet -->
+	<link rel="stylesheet" type="text/css" href="../lib/leaflet/leaflet.css">
+	<script type="text/javascript" src="../lib/d3/d3.js"></script>
+	<script type="text/javascript" src="../lib/leaflet/leaflet.js"></script>
+
+	<style type="text/css">
+	*{
+		margin: 0;
+		padding: 0;
+	}
+	#map{
+		width: 1400px;
+		height: 800px;
+	}
+	svg {
+  		position: relative;
+	}
+
+	/* path {
+	  		fill: #000;
+	  		fill-opacity: .2;
+	  		stroke: #fff;
+	  		stroke-width: 1.5px;
+	} */
+
+	path:hover {
+  		fill: brown;
+  		fill-opacity: .7;
+	}
+	</style>
+</head>
+<body>
+	<div id="map"></div>
+	<script type="text/javascript">
+	
+		// 初始化地图并将视图设置为所选的地理坐标和缩放级别,并添加图层
+		// center:[纬度,经度]
+    	var map=new L.Map("map",{center:[39.90,116.40],zoom:4})
+    	.addLayer(new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"));
+
+    	var svg=d3.select(map.getPanes().overlayPane).append("svg"),
+    		g=svg.append("g").attr("class","leaflet-zoom-hide");
+
+    	d3.json("../data/china.json",function(error,collection){
+    		if(error){
+    			return console.error(error);
+    		}
+
+    		// 投射点数，使用d3.geo.path来将GeoJSON转换为SVG
+    		var transform = d3.geo.transform({point:projectPoint}),
+    			path = d3.geo.path().projection(transform);
+
+    		// 使用D3的数据为每个特征创建路径元素
+    		var feature =g.selectAll("path")
+    			.data(collection.features)
+    			.enter().append("path");
+
+    		map.on("viewreset",reset);
+    		reset();
+
+    		// 重新定位SVG以覆盖features
+    		// SVG拟合到一个图层，SVG的大小取决于显示的地理特征和当前缩放级别
+    		function reset(){
+	    		// 计算给定要素的投影边界
+	    		var bounds = path.bounds(collection),
+	    			topLeft = bounds[0],
+	    			bottomRight = bounds[1];
+	    			console.log(topLeft);
+	    			console.log(bottomRight);
+
+	    		svg.attr("width",bottomRight[0]-topLeft[0])
+	    			.attr("height",bottomRight[1]-topLeft[1])
+	    			.style("left",topLeft[0]+"px")
+	    			.style("top",topLeft[1]+"px");
+	    		g.attr("transform","translate("+ -topLeft[0]+","+ -topLeft[1]+")");
+    		}
+
+	    	// 使用Leaflet实现D3几何变换
+	    	// 投影单个点，并将生成的坐标传输给输出几何流
+	    	function projectPoint(x,y){
+	    		// latLngToLayerPoint(<LatLng>latlng) 返回地图图层上与地理坐标相一致的点
+	    		// L.LatLng(Number lat,Number lng) lat为纬度，lng为经度，表示通过某一经度和纬度确定的地理上的点
+	    		var point =map.latLngToLayerPoint(new L.LatLng(y,x));
+	    		this.stream.point(point.x,point.y);
+	    	}
+    		
+    		feature.attr("d",path)
+    		.attr("fill","#000")
+    		.attr("stroke","#fff")
+	  		.attr("stroke-width",1.5)
+	  		.style("fill-opacity",0.2);
+    	});
+	</script>
+</body>
+</html>
