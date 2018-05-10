@@ -3,11 +3,15 @@
 <head>
 	<meta charset="UTF-8">
 	<title>D3+Leaflet</title>
-	<!-- 引入Leaflet -->
-	<link rel="stylesheet" type="text/css" href="../lib/leaflet/leaflet.css">
-	<script type="text/javascript" src="../lib/d3/d3.js"></script>
-	<script type="text/javascript" src="../lib/leaflet/leaflet.js"></script>
+	<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
+	<link rel="stylesheet" 
+        href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css"
+    />
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script
+        src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js">
+    </script>
 	<style type="text/css">
 	*{
 		margin: 0;
@@ -21,13 +25,6 @@
   		position: relative;
 	}
 
-	/* path {
-	  		fill: #000;
-	  		fill-opacity: .2;
-	  		stroke: #fff;
-	  		stroke-width: 1.5px;
-	} */
-
 	path:hover {
   		fill: brown;
   		fill-opacity: .7;
@@ -40,13 +37,18 @@
 	
 		// 初始化地图并将视图设置为所选的地理坐标和缩放级别,并添加图层
 		// center:[纬度,经度]
+		var mapLink =
+    '<a href="http://openstreetmap.org">OpenStreetMap</a>';
     	var map=new L.Map("map",{center:[39.90,116.40],zoom:4})
-    	.addLayer(new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"));
+    	.addLayer(new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; ' + mapLink + ' Contributors',
+        maxZoom: 18,
+    }));
 
     	var svg=d3.select(map.getPanes().overlayPane).append("svg"),
     		g=svg.append("g").attr("class","leaflet-zoom-hide");
 
-    	d3.json("../data/china.json",function(error,collection){
+    	d3.json("../data/china.geojson",function(error,collection){
     		if(error){
     			return console.error(error);
     		}
@@ -77,7 +79,14 @@
 	    			.attr("height",bottomRight[1]-topLeft[1])
 	    			.style("left",topLeft[0]+"px")
 	    			.style("top",topLeft[1]+"px");
+
 	    		g.attr("transform","translate("+ -topLeft[0]+","+ -topLeft[1]+")");
+
+	    		feature.attr("d",path)
+    				.attr("fill","#000")
+    				.attr("stroke","#fff")
+	  				.attr("stroke-width",1.5)
+	  				.style("fill-opacity",0.2);
     		}
 
 	    	// 使用Leaflet实现D3几何变换
@@ -89,11 +98,7 @@
 	    		this.stream.point(point.x,point.y);
 	    	}
     		
-    		feature.attr("d",path)
-    		.attr("fill","#000")
-    		.attr("stroke","#fff")
-	  		.attr("stroke-width",1.5)
-	  		.style("fill-opacity",0.2);
+    		
     	});
 	</script>
 </body>
