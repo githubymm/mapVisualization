@@ -18,11 +18,13 @@ a:hover {
 img {
 	border: 0;
 }
-
+body{
+	overflow: hidden;
+}
 
 #logo{
 	height: 98px;
-	width: 94.5%;
+	width: 100%;
 	line-height: 98px;
 	background: #00bfff;
 	color: #fff;
@@ -35,6 +37,10 @@ img {
 	padding-left:20px;
 	padding-right:20px;
 
+}
+
+.main{
+	/*position: relative;*/
 }
 #menu{
 	float: left;
@@ -56,11 +62,11 @@ img {
 	background: #00bfff;
 }
 
-
 #mapDiv{
-	width: 88%;
 	height: 800px;
-	margin-left: 200px;
+	margin-left: 210px;
+	overflow: hidden;
+	position: relative;
 }
 
 svg {
@@ -70,4 +76,35 @@ svg {
 .awesome-marker i {
 	font-size: 18px;
 	margin-top: 8px;
+}
+
+#msgbox{
+	z-index: 999;
+	float: left;
+	position: absolute;
+    top: 550px;
+    left: 50px;
+    background:#aad3df;
+    border-radius: 25px;
+}
+#msgbox p{
+	/*height: 25px;*/
+	/*line-height: 25px;*/
+	width:400px;
+	padding: 8px 10px;
+	font-size: 20px;
+	font-family: cursive;
+}
+#msgbox p:first-child{
+	margin-top: 10px;
+}
+#msgbox p:last-child{
+	margin-bottom: 10px;
+}
+
+.canvasTxt{
+	background: #F40A0A;
+	z-index: 99;
+	position: absolute;
+	top: 50px;
 }
