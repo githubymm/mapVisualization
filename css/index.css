@@ -108,3 +108,58 @@ svg {
 	position: absolute;
 	top: 50px;
 }
+
+
+/*村级人口统计*/
+#mapc-ount{
+	height: 800px;
+	/*margin-left: 210px;*/
+	overflow: hidden;
+	position: relative;
+}
+
+
+#searchGroup{
+	position: absolute;
+	font-size: 14px;
+	top: 110px;
+	left: 220px;
+	z-index:1000;
+}
+#searchGroup input {
+    outline: none;
+    border: 1px solid #20A0FF;
+    padding: 0;
+    margin: 0;
+    float: left;
+    height: 25px;
+    width: 270px;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+#searchGroup button {
+    float: left;
+    margin: 0 0 0 10px;
+    padding: 0;
+    line-height: 25px;
+    padding: 6px 15px;
+    outline: none;
+    border: none;
+    background-color: #20A0FF;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.clear{
+	clear: both;
+}
+
+#placeMsg{
+	font-size: 14px;
+	z-index:1000;
+	
+}
+#placeMsg p{
+	margin: 5px 0;
+}

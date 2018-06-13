@@ -1,0 +1,18 @@
+{
+	"type": "FeatureCollection",
+	"features": [{
+		"type": "Feature",
+		"geometry": {
+			"type": "Point",
+			"coordinates": [113.08, 28.80]
+		},
+		"properties": {
+			"Id": "9a7",
+			"BZMC": "汨罗市",
+			"DLSTGK":"",
+			"DMDLL":"",
+			"DMDLSYG":"",
+			"DMDHY":""
+		}
+	}]
+}

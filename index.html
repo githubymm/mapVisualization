@@ -19,18 +19,26 @@
 	
 
 	<div id="logo">
-	<i class="fa fa-globe"></i>web前端数据可视化展示</div>
+	<i class="fa fa-globe"></i>汨罗市一公里数据可视化展示</div>
 	<div class="main">
+		<!-- 菜单栏 -->
 		<div id="menu" class="clearfix">
-			<ul>
-				<li>文化、体育和娱乐设施</li>
-				<li>交通和物流设施</li>
-				<li>购物设施</li>
-				<li>教育设施</li>
-				<li>健康
+			<ul id="menuList">
+				<li id="cities">城镇居民</li>
+				<li id="transport">交通道路</li>
+				<li id="life">文化教育娱乐</li>
+				<li id="work">党政企事业单位</li>
 			</ul>
 		</div>
+		<!-- 地图展示区域 -->
 		<div id="mapDiv"></div>
+		<!-- 搜索框 -->
+		<div id="searchGroup">
+        	<input type="text" id="startP" placeholder="请输入地点名">
+        	<button id="searchP" onclick="findPlaces()">搜索</button>
+        	<div class="clear"></div>
+    	</div>
+
 	</div>
 
 	<!-- <div id="msgbox">

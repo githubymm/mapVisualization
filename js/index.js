@@ -3,18 +3,24 @@
 var mapLink =
     '<a href="http://openstreetmap.org">OpenStreetMap</a>';
 var map = new L.Map("mapDiv", {
-        center: [28.80, 113.08],
+        center: [20.80, 113.08],
         zoom: 16,
         mimZoom: 8,
-        maxZoom: 30
+        maxZoom: 30,
+        zoomControl: false,
     })
     .addLayer(new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; ' + mapLink + ' Contributors',
         maxZoom: 18,
     }));
+// 自定义缩放按钮
+L.control.zoom({
+     position:'topright'
+}).addTo(map);
 
-// drawMiluo();
-
+// drawPolygon("data/miluo.json");
+// drawPolygon("data/changsha.json");
+/*
 drawPoint("data/汨罗市一公里测试数据/c276民政事务网点_Clip.json", "cog", "cadetblue");
 drawPoint("data/汨罗市一公里测试数据/c2741酒店_Clip.json", "fa-hotel", "red");
 drawPoint("data/汨罗市一公里测试数据/c2651集贸市场专业市场_Clip.json", "shopping-cart");
@@ -26,18 +32,61 @@ drawPoint("data/汨罗市一公里测试数据/c2333道口_Clip.json", "fa-map-s
 drawPoint("data/汨罗市一公里测试数据/c221城镇居民点_Clip.json", "fa-star", "green");
 drawPoint("data/汨罗市一公里测试数据/c2163村民小组_Clip.json", "fa-group", "orange");
 drawPoint("data/汨罗市一公里测试数据/c216村民委员会_Clip.json", "fa-group", "green");
-
+*/
 drawLine("data/汨罗市一公里测试数据/c121河流_Clip.json","#aad3df", 10, "#aad3df");
 drawLine("data/汨罗市一公里测试数据/c2331铁路_Clip.json","#717171",5,"#717171");
-drawLine("data/汨罗市一公里测试数据/c2351道路街巷_Clip.json", "#fff", 5, "#fff");
+// drawLine("data/汨罗市一公里测试数据/c2351道路街巷_Clip.json", "#fff", 5, "#fff");
 drawLine("data/汨罗市一公里测试数据/c2361桥梁_Clip.json", "#f7fabf", 10, "#f7fabf");
 
-// 绘制汨罗市轮廓
-function drawMiluo() {
+//点击菜单，调用函数绘制地点
+window.onload = function() {
+    drawPoint("data/miluocity.json", "fa-star", "red");
+    var menuList = document.getElementById("menuList");
+    menuList.onclick = function(ev) {
+        var ev = ev || window.event;　　　　
+        var target = ev.target || ev.srcElement;　　　　
+        if (target.nodeName.toLowerCase() == 'li') {　　
+            switch (target.id) {
+                case 'cities':
+                    // alert(target.innerHTML);
+                    drawPoint("data/汨罗市一公里测试数据/c221城镇居民点_Clip.json", "fa-star", "green");
+                    drawPoint("data/汨罗市一公里测试数据/c2163村民小组_Clip.json", "fa-group", "orange");
+                    drawPoint("data/汨罗市一公里测试数据/c216村民委员会_Clip.json", "fa-group", "green");
+                    break;
+                case 'transport':
+                    // alert(target.innerHTML);
+                    drawPoint("data/汨罗市一公里测试数据/c2365环岛路口_Clip.json", "fa-refresh", "lightgreen");
+                    drawPoint("data/汨罗市一公里测试数据/c2353公共交通车站_Clip.json", "fa-bus", "gray");
+                    drawPoint("data/汨罗市一公里测试数据/c2333道口_Clip.json", "fa-map-signs", "lightgray");
+                    break;
+                case 'life':
+                    // alert(target.innerHTML);
+                    drawPoint("data/汨罗市一公里测试数据/c276民政事务网点_Clip.json", "cog", "cadetblue");
+                    drawPoint("data/汨罗市一公里测试数据/c2741酒店_Clip.json", "fa-hotel", "red");
+                    drawPoint("data/汨罗市一公里测试数据/c2651集贸市场专业市场_Clip.json", "shopping-cart");
+                    drawPoint("data/汨罗市一公里测试数据/c2631广场体育场_Clip.json", "fa-soccer-ball-o");
+                    break;
+                case 'work':
+                    // alert(target.innerHTML);
+                    drawPoint("data/汨罗市一公里测试数据/c271党政机关社会组织事业单位企业_Clip.json");
+                    break;
+                default:
+                    alert("请选择菜单！")
+            }　　　
+        }　　
+    }
+}
+
+
+
+// 绘制面
+function drawPolygon(url) {
+
     var svg = d3.select(map.getPanes().overlayPane).append("svg"),
         g = svg.append("g").attr("class", "leaflet-zoom-hide");
 
-    d3.json("data/miluo.json", function(error, miluo) {
+
+    d3.json(url, function(error, miluo) {
         if (error) {
             console.log("error");
             return console.error(error);
@@ -94,6 +143,9 @@ function drawMiluo() {
 }
 
 
+var allPlaces=new Array();
+var placeStyle;
+var marker;
 /**
  * 画点
  *@param url 请求文件地址
@@ -104,6 +156,7 @@ function drawMiluo() {
  *
  * @return
  */
+
 function drawPoint(url, icon, markerColor, iconColor, spin) {
     var markerColors = ["red", "darkred", "lightred", "orange", "beige", "green", "darkgreen",
         "lightgreen", "blue", "darkblue", "lightblue", "cadetblue", "purple", "darkpurple", "pink",
@@ -118,7 +171,7 @@ function drawPoint(url, icon, markerColor, iconColor, spin) {
     }
     if (markerColor == undefined || markerColors.indexOf(markerColor) < 0) {
         markerColor = 'blue';
-        console.log(icon + "图标底色未定义或图标底色不正确！")
+        // console.log(icon + "图标底色未定义或图标底色不正确！")
     }
     if (iconColor == undefined) {
         iconColor = '#fff';
@@ -126,13 +179,13 @@ function drawPoint(url, icon, markerColor, iconColor, spin) {
     if (spin == undefined) {
         spin = false;
     }
-    // console.log(icon);
-    $.getJSON(url, function(data) {
-        // console.log(data.features);
+
+    d3.json(url, function(error,data) {
         var features = data.features;
         var coordinates = new Array();
         var titles = new Array();
         var description = new Array();
+        var placeId=new Array();
 
         if (features instanceof Array) {
             $.each(features, function(index, item) {
@@ -140,15 +193,34 @@ function drawPoint(url, icon, markerColor, iconColor, spin) {
                 // console.log(item.properties);
                 //BZMC 雅格云莱酒店,DLSTGK 位于归义镇集镇,DMDHY 酒店服务行业,
                 //DMDLL 由商家老板取名,DMDLSYG 自开业以来未曾更名
-                var contents = item.properties.BZMC + "<br/>" + item.properties.DLSTGK +
-                    "<br/>" + item.properties.DMDHY + "<br/>" + item.properties.DMDLL + "<br/>" + item.properties.DMDLSYG;
+                // console.log("data.features");
+                // console.log(data.features);
+                var contents="<ul><li><h4>"+item.properties.BZMC+
+                "</h4></li><li><p>"+item.properties.DLSTGK+"</p></li><li><p>"+
+                item.properties.DMDHY+"</p></li><li><p>"+item.properties.DMDLL+
+                "</p></li><li><p>"+item.properties.DMDLSYG+"</p></li></ul>";
+                
+                /*var contents = item.properties.BZMC +"<br/>"+item.properties.DLSTGK +
+                    item.properties.DMDHY + item.properties.DMDLL + item.properties.DMDLSYG;*/
                 titles.push(item.properties.BZMC);
                 description.push(contents);
+                placeId.push(item.properties.Id);
             });
         }
+
+        
+        for(var j=0;j<titles.length;j++){
+            allPlaces[j]=new Array();
+            // for(k=0;k<titles.length;k++){
+                allPlaces[j][j]=titles[j]+","+placeId[j];
+            // }
+        }
+    console.log("allPlaces");
+
+console.log(allPlaces);
         for (var i = 0; i < coordinates.length; i++) {
             // console.log(typeof coordinates[i][1]);
-            L.marker([coordinates[i][1], coordinates[i][0]], {
+            marker=L.marker([coordinates[i][1], coordinates[i][0]], {
                     title: titles[i],
                     opacity: 0.9,
                     draggable: false,
@@ -161,12 +233,28 @@ function drawPoint(url, icon, markerColor, iconColor, spin) {
                     })
                 })
                 .addTo(map)
-                .bindPopup("<p>" + description[i] + "</p>")
+                .bindPopup("<div id='placeMsg'>" + description[i] + "</div>")
                 .openPopup();
-        }
-    });
-}
 
+            // allPlaces[i]=titles[i];
+            
+            // console.log(marker._icon.className);
+            // console.log("marker");
+            // console.log(marker);
+            // marker._icon.className=marker._icon.className+" placesId-"+placeId[i];
+            // console.log(marker._icon.className);
+
+            // allPlaces[i]=new Array();
+
+        }
+        
+    });
+
+}
+    // console.log(allPlaces);
+
+
+    
 /**
  * 画线
  *@param url 请求文件地址
@@ -195,7 +283,9 @@ function drawLine(url, stroke, strokeWidth, fill) {
             console.log("error");
             return console.error(error);
         }
+        console.log("data");
 
+        console.log(data);
         // 投射点数，使用d3.geo.path来将GeoJSON转换为SVG
         var transform = d3.geo.transform({
                 point: projectPoint
@@ -210,19 +300,7 @@ function drawLine(url, stroke, strokeWidth, fill) {
         var text = g.selectAll("text")
             .data(data.features)
             .enter().append("text");
-        console.log(data.features);
-
-        ////////////////////////////
-
-        /*var canvas = d3.select("#mapDiv")
-            .data(data.features)
-            .enter().append("canvas")
-            
-        var context=canvas.node().getContext("2d");
-        path.context(context);*/
-
-        ////////////////////////////
-
+        // console.log(data.features);
 
         map.on("viewreset", reset);
         reset();
@@ -234,8 +312,8 @@ function drawLine(url, stroke, strokeWidth, fill) {
             var bounds = path.bounds(data),
                 topLeft = bounds[0],
                 bottomRight = bounds[1];
-            console.log("topLeft "+topLeft);
-            console.log(bottomRight);
+            // console.log("topLeft "+topLeft);
+            // console.log(bottomRight);
 
             // 取得或设置渲染上下文
             // var context=path.context(data.features[0].properties.BZMC);
@@ -251,29 +329,7 @@ function drawLine(url, stroke, strokeWidth, fill) {
             feature.attr("d", path)
                 .attr("stroke", stroke)
                 .attr("stroke-width", strokeWidth)
-                .attr("fill", fill)
-                .on('click', function(d, i) {
-                    // d3.select("body").append("div");
-                });
-
-            /////////////////////////
-            
-            /*canvas.attr("width", 100)
-                .attr("height", 50)
-                .attr("class", "canvasTxt");
-            for (var i = data.features.length - 1; i >= 0; i--) {
-                context.beginPath();
-                // path(data.features[i]);
-                // context.fillStyle = #F61818;
-                // context.fill();
-                context.font = "bold 14px Arial";
-                context.textBaseline = "middle";
-                console.log(data.features[i].properties.BW);
-                context.fillText(data.features[i].properties.BW, 200, 20);
-                context.closePath();
-            }*/
-
-            /////////////////////////
+                .attr("fill", fill);
             
             text.attr({
                     'x': topLeft[0] + (bottomRight[0] - topLeft[0]) / 2,
@@ -281,20 +337,15 @@ function drawLine(url, stroke, strokeWidth, fill) {
                     'dy': '.35em'
 
                 })
-                // text.attr({
-                //     "x":function(d,i){return d.properties.BW; },
-                //     "y":function(d,i){return d.properties.DJ;},
-                //     "dy":"0.35em"
-                // })
                 .style({
                     "text-anchor": function(d) {
                         return 'middle';
                     }
                 })
                 .text(function(d, i) {
-                    console.log(d);
-                    console.log(i);
-                    console.log(d.properties.BZMC)
+                    // console.log(d);
+                    // console.log(i);
+                    // console.log(d.properties.BZMC)
                     return d.properties.BZMC;
 
                 });
@@ -325,7 +376,7 @@ function drawLine(url, stroke, strokeWidth, fill) {
  * @return true/false
  */
 function findString(stringValue, el) {
-    console.log(stringValue.length);
+    // console.log(stringValue.length);
     if (stringValue.length == 7 || stringValue.length == 4) {
         var positions = new Array();
         var pos = stringValue.indexOf(el);
@@ -343,3 +394,46 @@ function findString(stringValue, el) {
 
     return false;
 }
+
+/**
+ * 搜索地点
+ *@param inputPlace 输入的地点名
+ *@param el 
+ *
+ * @return 
+ */
+function findPlaces() {
+    var keyWord = $("#startP").val();
+    console.log(keyWord);
+    
+    //方法一，字符串方法indexOf
+    var len = allPlaces.length;
+    var arr = [];
+    for (var i = 0; i < len; i++) {
+        //如果字符串中不包含目标字符会返回-1
+        if (allPlaces[i].indexOf(keyWord) >= 0) {
+            arr.push(allPlaces[i]);
+        }
+    }
+    if(arr==false){
+        alert("该地点未进行标记！")
+    }
+    return arr;
+/*
+    //方法二，正则表达式
+    var len = allPlaces.length;
+    var arr = [];
+    var reg = new RegExp(keyWord);
+    for (var i = 0; i < len; i++) {
+        //如果字符串中不包含目标字符会返回-1
+        if (allPlaces[i].match(reg)) {
+            arr.push(allPlaces[i]);
+        }
+    }
+    return arr;
+*/
+
+
+}
+
+
