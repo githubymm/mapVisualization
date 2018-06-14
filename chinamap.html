@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>中国地图可视化</title>
+	<script type="text/javascript" src="lib/d3/d3.js"></script>
+	<style type="text/css">
+		.provinces-label{
+			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  			font-size: 10px;
+  			pointer-events: none;
+		}
+	</style>
+</head>
+<body>
+	<a href="hunanmap.html">湖南地图</a>
+	<a href="changshamap.html">长沙地图</a>
+	<script >
+		var width=1000;
+		var height=1000;
+
+		var svg=d3.select('body').append('svg')
+				.attr('width', width)
+				.attr('height',height)
+				.append('g')
+				.attr('transform','translate(0,0)');
+
+		//定义一个地理投影，用来将经纬度数据转换为二维坐标
+		//mercator()投影函数
+		//center()设定地图的中心位置，[120,35]指经纬度
+		var projection=d3.geo.mercator()
+						.center([107,25])
+						.scale(700)
+						.translate([width/2,height/2]);
+		//定义地理路径生成器，需绑定之前定义的地理投影
+		//projection()是设定生成器的投影函数
+		var path=d3.geo.path()
+				.projection(projection);
+
+		var color=d3.scale.category20();
+
+		d3.json("data/china.json",function(error,china){
+			if(error){
+				return console.error(error);
+			}
+			svg.selectAll("path")
+				.data(china.features)
+				.enter()
+				.append('path')
+				.attr('stroke','#000')
+				.attr('stroke-width',.5)
+				.attr('fill',function(d,i){
+					return color(i);
+				})
+				.attr('d', path)
+				.on('mouseover',function(d,i){
+					d3.select(this).attr('fill','yellow');
+				})
+				.on('mouseout',function(d,i){
+					d3.select(this).attr('fill',color(i))
+				});
+
+				//添加各省标签
+				var provincesLabel=svg.selectAll('.provinces-label')
+					.data(china.features)
+					.enter().append('text')
+					.attr('class', function(d){return 'provinces-label provinces-'+d.properties.id;})
+					.attr('transform', function(d){return 'translate('+path.centroid(d)+')';})
+					.attr('x', function(d){
+						// 微调河北、陕西、甘肃位置
+						if(d.properties.id==13){ return -15;}
+						if(d.properties.id==61){ return 5;}
+						if(d.properties.id==62){return 20;}
+					})
+					.attr('y',function(d){
+						// 微调内蒙古自治区、香港、澳门位置
+						if(d.properties.id==15){return 20;}
+						if(d.properties.id==81||d.properties.id==82){return 10;}
+					})
+					.attr('dy','.35em')
+					.style({
+						'text-anchor':'middle',//文本对齐方式
+						'writing-mode':function(d){//文本书写格式：垂直
+							if(d.properties.id==61 ||d.properties.id==64 ||d.properties.id==81||d.properties.id==82||d.properties.id==13) {return 'tb'};
+						},
+						'font-size':function(d){
+							if(d.properties.id==64 ||d.properties.id==81||d.properties.id==82) {return 8;}
+						}
+					})
+					.text(function(d){
+						if(d.properties.name=='香港特别行政区'){
+							return '香港';
+						}
+						if (d.properties.name=='澳门特别行政区') {
+							return '澳门';
+						}
+						return d.properties.name;
+					});
+
+		})
+	</script>
+</body>
+</html>

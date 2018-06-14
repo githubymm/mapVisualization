@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>长沙地图</title>
+	<script type="text/javascript" src="lib/d3/d3.js"></script>
+	<style type="text/css">
+		.provinces-label{
+			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  			font-size: 10px;
+  			pointer-events: none;
+  			fill: #636060;
+  			fill-opacity: .8;
+  			font-weight: 300;
+  			text-anchor:middle
+		}
+	</style>
+</head>
+<body>
+	<div>
+		<a href="chinamap.html">中国地图</a>
+		<a href="hunanmap.html">湖南地图</a>
+		<a href="changshaCityMap.html">长沙市区地图</a>
+	</div>
+	<script >
+		var width=1000;
+		var height=500;
+
+		var svg=d3.select('body').append('svg')
+				.attr('width', width)
+				.attr('height',height)
+				.append('g')
+				.attr('transform','translate(0,0)');
+
+		//定义一个地理投影，用来将经纬度数据转换为二维坐标
+		//mercator()投影函数
+		//center()设定地图的中心位置，[120,35]指经纬度
+		var projection=d3.geo.mercator()
+						.center([112.93,28.23])
+						.scale(18000)
+						.translate([width/2,height/2]);
+		//定义地理路径生成器，需绑定之前定义的地理投影
+		//projection()是设定生成器的投影函数
+		var path=d3.geo.path()
+				.projection(projection);
+
+		var color=d3.scale.category20();
+
+		d3.json("data/changsha.json",function(error,changsha){
+			if(error){
+				return console.error(error);
+			}
+			// 绘制长沙地图
+			svg.selectAll("path")
+				.data(changsha.features)
+				.enter()
+				.append('path')
+				.attr('stroke','#fff')
+				.attr('stroke-width',.5)
+				.attr('fill','#ddc')
+				.attr('d', path)
+				.on('mouseover',function(d,i){
+					d3.select(this).attr('fill','yellow');
+				})
+				.on('mouseout',function(d,i){
+					d3.select(this).attr('stroke-width',0).attr('fill',color(i))
+				});
+			//添加各区标签
+			var provincesLabel=svg.selectAll('.provinces-label')
+				.data(changsha.features)
+				.enter().append('text')
+				.attr('class', function(d){return 'provinces-label provinces-'+d.properties.id;})
+				.attr('transform', function(d){return 'translate('+path.centroid(d)+')';})
+				.attr('dy','.35em')
+				.style('writing-mode',function(d){
+					if(d.properties.id==430105 ||d.properties.id==430103 ||d.properties.id==430111) {return 'tb'}
+				})
+				.text(function(d){return d.properties.name;});
+		});
+
+		// 绘制河流
+		d3.json('data/c121河流_Clip.json',function(error,clip){
+			if(error){
+				return console.error(error);
+			}
+			console.log(clip.features);
+			var clipG=svg.selectAll('.clipG')
+						.data(clip.features)
+						.enter()
+						.append('g')
+						.attr('class', 'clipG')
+						.attr('transform', function(d){
+							var coor=projection(d.properties.cp);
+							return 'translate('+coor[0]+','+coor[1]+')';
+						});
+
+			svg.selectAll('line')
+				.data(clip.features)
+				.enter()
+				.append('line')
+				.attr({
+					'x1':function(d){return d.geometry.coordinates[0][1];},
+					'y1':function(d){return d.geometry.coordinates[0][1];},
+					'x2':function(d){return d.geometry.coordinates[1][0];},
+					'y2':function(d){return d.geometry.coordinates[1][1];},
+				})
+				.attr('stroke','#000')
+				.attr('stroke-width',2)
+				.attr('fill','#ddc');
+		})
+		// svg.append('line')
+			
+	</script>
+</body>
+</html>
